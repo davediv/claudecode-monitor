@@ -1,0 +1,17 @@
+{
+  "name": "claude-code-monitor",
+  "version": "1.0.0",
+  "description": "Cloudflare Worker to monitor Claude Code release notes",
+  "main": "src/index.js",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev",
+    "tail": "wrangler tail"
+  },
+  "keywords": ["cloudflare-workers", "claude", "monitoring", "telegram"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  }
+}
