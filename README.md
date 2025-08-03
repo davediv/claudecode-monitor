@@ -209,3 +209,34 @@ compareVersions('1.0.0-alpha.1', '1.0.0-alpha');     // returns 1
 compareVersions('1.0.0-rc.1', '1.0.0-beta.11');     // returns 1
 compareVersions('1.0.0+build.1', '1.0.0+build.2');  // returns 0 (build metadata ignored)
 ```
+
+### Sending Telegram Notifications
+
+```typescript
+import { sendTelegramNotification } from './telegram';
+
+const config = {
+  botToken: process.env.TELEGRAM_BOT_TOKEN,
+  chatId: process.env.TELEGRAM_CHAT_ID,
+};
+
+const message = {
+  version: '1.0.65',
+  date: '2024-01-15',
+  changes: [
+    '- IDE: Fixed connection stability issues',
+    '- Windows: Fixed shell environment setup',
+    '- Added better error recovery'
+  ],
+  changelogUrl: 'https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md'
+};
+
+try {
+  await sendTelegramNotification(config, message);
+  console.log('Notification sent successfully');
+} catch (error) {
+  if (error instanceof WorkerError) {
+    console.error(`Failed to send: ${error.message}`);
+  }
+}
+```
