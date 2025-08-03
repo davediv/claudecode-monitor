@@ -38,6 +38,12 @@
 		"skipLibCheck": true,
 		"types": [
 			"./worker-configuration.d.ts"
-		]
-	}
+		],
+		"baseUrl": "./",
+		"paths": {
+			"@/*": ["src/*"]
+		}
+	},
+	"include": ["src/**/*", "worker-configuration.d.ts"],
+	"exclude": ["node_modules", "dist", ".wrangler"]
 }
