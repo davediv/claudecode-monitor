@@ -204,13 +204,14 @@ This TODO list outlines the development tasks for the Claude Code Version Monito
   - **Effort**: M
   - **Completed**: 2025-08-03
 
-- [ ] 🟡 **TEST-P3-002**: Write unit tests for version comparison logic
-  - **Acceptance Criteria**: 
+- [x] 🟡 **TEST-P3-002**: Write unit tests for version comparison logic
+  - **Acceptance Criteria**: [Met ✓]
     - Tests all comparison scenarios
     - Tests edge cases (pre-releases, etc.)
     - Validates semver compliance
   - **Dependencies**: FEAT-P2-003
   - **Effort**: S
+  - **Completed**: 2025-08-03
 
 - [ ] 🟡 **TEST-P3-003**: Write unit tests for notification formatter
   - **Acceptance Criteria**: 
