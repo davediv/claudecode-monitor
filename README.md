@@ -94,7 +94,7 @@ The application follows a modular structure:
 - `src/utils.ts` - Common utility functions
 - `src/types/` - TypeScript type definitions and data models
 
-## Usage Example
+## Usage Examples
 
 ### Fetching Changelog
 
@@ -110,5 +110,37 @@ try {
   if (error instanceof WorkerError) {
     console.error(`Failed to fetch: ${error.message}`);
   }
+}
+```
+
+### Parsing Changelog
+
+```typescript
+import { parseChangelog, extractLatestVersion } from './changelog';
+
+// Parse the full changelog
+const changelogData = parseChangelog(markdown);
+console.log(`Found ${changelogData.versions.length} versions`);
+console.log(`Latest: ${changelogData.latestVersion?.version}`);
+
+// Or just extract the latest version
+const latest = extractLatestVersion(markdown);
+console.log(`Latest version: ${latest}`);
+```
+
+### Comparing Versions
+
+```typescript
+import { compareVersions, isValidSemver } from './changelog';
+
+// Validate semantic version format
+if (isValidSemver('1.0.65')) {
+  console.log('Valid version');
+}
+
+// Compare two versions
+const result = compareVersions('1.0.65', '1.0.64');
+if (result > 0) {
+  console.log('1.0.65 is newer than 1.0.64');
 }
 ```

@@ -5,7 +5,7 @@
 
 import type { Version, ChangelogData } from './types/models';
 import { ErrorCode } from './types/models';
-import { WorkerError } from './types';
+import { WorkerError } from './types/index';
 import { measureTime, logError } from './utils';
 
 /**
@@ -100,53 +100,114 @@ export async function fetchChangelog(url: string, signal?: AbortSignal): Promise
  * Parses the changelog markdown to extract version information
  * @param markdown - The raw markdown content
  * @returns Parsed changelog data
+ * @throws {WorkerError} If markdown is invalid or parsing fails
  */
 export function parseChangelog(markdown: string): ChangelogData {
-	const versions: Version[] = [];
+	try {
+		if (!markdown || typeof markdown !== 'string') {
+			throw new WorkerError('Invalid markdown content provided', ErrorCode.PARSE_ERROR);
+		}
 
-	// Regex to match version headers like ## [1.2.3] - 2024-01-15
-	// const versionRegex = /^##\s*\[?v?(\d+\.\d+\.\d+)\]?\s*-?\s*(\d{4}-\d{2}-\d{2})/gm;
+		const versions: Version[] = [];
+		const lines = markdown.split('\n');
+		let currentVersion: Version | null = null;
+		let currentChanges: string[] = [];
 
-	const lines = markdown.split('\n');
-	let currentVersion: Version | null = null;
-	let currentChanges: string[] = [];
+		// Enhanced regex patterns for different version formats
+		// Format 1: ## [1.2.3] - 2024-01-15 (with date)
+		// Format 2: ## v1.2.3 - 2024-01-15 (with v prefix and date)
+		// Format 3: ## 1.2.3 (version only, like Claude Code changelog)
+		// Format 4: ## [v1.2.3] (bracketed with v prefix)
+		const versionWithDateRegex = /^##\s*\[?v?(\d+\.\d+\.\d+(?:-[a-zA-Z0-9.-]+)?)\]?\s*(?:-\s*(\d{4}-\d{2}-\d{2}))?/;
 
-	for (let i = 0; i < lines.length; i++) {
-		const line = lines[i];
-		const versionMatch = line.match(/^##\s*\[?v?(\d+\.\d+\.\d+)\]?\s*-?\s*(\d{4}-\d{2}-\d{2})/);
+		for (let i = 0; i < lines.length; i++) {
+			const line = lines[i];
+			let versionMatch = line.match(versionWithDateRegex);
 
-		if (versionMatch) {
-			// Save previous version if exists
-			if (currentVersion) {
-				currentVersion.changes = currentChanges;
-				versions.push(currentVersion);
-			}
+			if (versionMatch && versionMatch[1]) {
+				// Save previous version if exists
+				if (currentVersion && currentChanges.length > 0) {
+					currentVersion.changes = currentChanges;
+					versions.push(currentVersion);
+				}
 
-			// Start new version
-			currentVersion = {
-				version: versionMatch[1],
-				date: versionMatch[2],
-				changes: [],
-			};
-			currentChanges = [];
-		} else if (currentVersion && line.trim()) {
-			// Collect changes for current version
-			if (line.startsWith('- ') || line.startsWith('* ') || line.startsWith('• ')) {
-				currentChanges.push(line.trim());
+				// Start new version
+				currentVersion = {
+					version: versionMatch[1],
+					date: versionMatch[2] || 'Unknown',
+					changes: [],
+				};
+				currentChanges = [];
+				console.log(`Found version: ${currentVersion.version} (${currentVersion.date})`);
+			} else if (currentVersion && line.trim()) {
+				// Collect changes for current version
+				// Support various bullet formats and also collect subheadings
+				if (line.match(/^[-*•]\s+/) || line.match(/^\s+[-*•]\s+/)) {
+					currentChanges.push(line.trim());
+				} else if (line.match(/^###\s+/)) {
+					// Include subheadings like ### Added, ### Fixed
+					currentChanges.push(line.trim());
+				}
 			}
 		}
-	}
 
-	// Don't forget the last version
-	if (currentVersion) {
-		currentVersion.changes = currentChanges;
-		versions.push(currentVersion);
-	}
+		// Don't forget the last version
+		if (currentVersion && currentChanges.length > 0) {
+			currentVersion.changes = currentChanges;
+			versions.push(currentVersion);
+		}
 
-	return {
-		versions,
-		latestVersion: versions.length > 0 ? versions[0] : null,
-	};
+		// Validate we found at least one version
+		if (versions.length === 0) {
+			throw new WorkerError('No valid version entries found in changelog. Expected format: ## X.X.X', ErrorCode.PARSE_ERROR, {
+				markdown: markdown.substring(0, 500),
+			});
+		}
+
+		console.log(`Successfully parsed ${versions.length} versions from changelog`);
+
+		return {
+			versions,
+			latestVersion: versions[0],
+		};
+	} catch (error) {
+		// Re-throw WorkerError as-is
+		if (error instanceof WorkerError) {
+			throw error;
+		}
+
+		// Log and wrap other errors
+		logError(error, { operation: 'parseChangelog' });
+		throw new WorkerError(`Failed to parse changelog: ${error instanceof Error ? error.message : String(error)}`, ErrorCode.PARSE_ERROR, {
+			originalError: error,
+		});
+	}
+}
+
+/**
+ * Extracts the latest version from changelog content
+ * @param markdown - The raw markdown content
+ * @returns The latest version string or null if not found
+ */
+export function extractLatestVersion(markdown: string): string | null {
+	try {
+		const data = parseChangelog(markdown);
+		return data.latestVersion?.version || null;
+	} catch (error) {
+		console.error('Failed to extract latest version:', error);
+		return null;
+	}
+}
+
+/**
+ * Validates if a string is a valid semantic version
+ * @param version - Version string to validate
+ * @returns true if valid semver format
+ */
+export function isValidSemver(version: string): boolean {
+	// Regex for semantic versioning with optional pre-release and build metadata
+	const semverRegex = /^\d+\.\d+\.\d+(?:-[a-zA-Z0-9.-]+)?(?:\+[a-zA-Z0-9.-]+)?$/;
+	return semverRegex.test(version);
 }
 
 /**
@@ -154,14 +215,35 @@ export function parseChangelog(markdown: string): ChangelogData {
  * @param v1 - First version
  * @param v2 - Second version
  * @returns 1 if v1 > v2, -1 if v1 < v2, 0 if equal
+ * @throws {WorkerError} If versions are invalid
  */
 export function compareVersions(v1: string, v2: string): number {
-	const parts1 = v1.split('.').map(Number);
-	const parts2 = v2.split('.').map(Number);
+	if (!isValidSemver(v1) || !isValidSemver(v2)) {
+		throw new WorkerError(`Invalid semantic version format. v1: "${v1}", v2: "${v2}"`, ErrorCode.PARSE_ERROR);
+	}
 
-	for (let i = 0; i < 3; i++) {
-		if (parts1[i] > parts2[i]) return 1;
-		if (parts1[i] < parts2[i]) return -1;
+	// Split versions into parts
+	const parseVersion = (v: string): { major: number; minor: number; patch: number; prerelease?: string } => {
+		const [mainPart, prerelease] = v.split('-');
+		const [major, minor, patch] = mainPart.split('.').map(Number);
+		return { major, minor, patch, prerelease };
+	};
+
+	const p1 = parseVersion(v1);
+	const p2 = parseVersion(v2);
+
+	// Compare major.minor.patch
+	if (p1.major !== p2.major) return p1.major > p2.major ? 1 : -1;
+	if (p1.minor !== p2.minor) return p1.minor > p2.minor ? 1 : -1;
+	if (p1.patch !== p2.patch) return p1.patch > p2.patch ? 1 : -1;
+
+	// If one has prerelease and other doesn't, version without prerelease is greater
+	if (p1.prerelease && !p2.prerelease) return -1;
+	if (!p1.prerelease && p2.prerelease) return 1;
+
+	// If both have prereleases, compare them lexically
+	if (p1.prerelease && p2.prerelease) {
+		return p1.prerelease.localeCompare(p2.prerelease);
 	}
 
 	return 0;
