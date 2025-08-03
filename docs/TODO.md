@@ -60,13 +60,14 @@ This TODO list outlines the development tasks for the Claude Code Version Monito
   - **Effort**: S
   - **Completed**: 2025-08-03
 
-- [ ] 🟡 **INFRA-P1-006**: Set up development tooling (linting, formatting)
-  - **Acceptance Criteria**: 
+- [x] 🟡 **INFRA-P1-006**: Set up development tooling (linting, formatting)
+  - **Acceptance Criteria**: [Met ✓]
     - ESLint configured for TypeScript
     - Prettier configured
     - Pre-commit hooks optional
   - **Dependencies**: INFRA-P1-001
   - **Effort**: S
+  - **Completed**: 2025-08-03
 
 ## Phase 2: Core Features
 

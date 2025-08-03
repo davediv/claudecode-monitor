@@ -18,7 +18,7 @@
 import type { ExportedHandler, ScheduledEvent, ExecutionContext } from './types';
 
 export default {
-	async fetch(req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+	fetch(req: Request, _env: Env, _ctx: ExecutionContext): Response {
 		const url = new URL(req.url);
 		url.pathname = '/__scheduled';
 		url.searchParams.append('cron', '* * * * *');
@@ -27,7 +27,7 @@ export default {
 
 	// The scheduled handler is invoked at the interval set in our wrangler.jsonc's
 	// [[triggers]] configuration.
-	async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
+	async scheduled(event: ScheduledEvent, _env: Env, _ctx: ExecutionContext): Promise<void> {
 		// A Cron Trigger can make requests to other endpoints on the Internet,
 		// publish to a Queue, query a D1 Database, and much more.
 		//
