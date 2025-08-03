@@ -6,6 +6,7 @@ declare namespace Cloudflare {
 		VERSION_STORAGE: KVNamespace;
 		GITHUB_CHANGELOG_URL: "https://raw.githubusercontent.com/anthropics/claude-code/refs/heads/main/CHANGELOG.md";
 		TELEGRAM_CHAT_ID: "";
+		TELEGRAM_THREAD_ID: "";
 		LOG_LEVEL: "INFO";
 		PERFORMANCE_ANALYTICS_ENABLED: "false";
 		TELEGRAM_BOT_TOKEN: string;

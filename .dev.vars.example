@@ -6,3 +6,9 @@ TELEGRAM_BOT_TOKEN=your_bot_token_here
 
 # Optional: Override TELEGRAM_CHAT_ID for development
 # TELEGRAM_CHAT_ID=your_dev_chat_id
+
+# Optional: Thread/topic ID for sending to specific topics in Telegram supergroups
+# Leave empty to send to the main chat
+# To get the thread ID: Send a message to the topic and use the Telegram Bot API
+# to get updates, the thread ID will be in the message_thread_id field
+# TELEGRAM_THREAD_ID=

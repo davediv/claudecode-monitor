@@ -115,13 +115,12 @@ export default {
 
 						// Send Telegram notification with tracking
 						await trackPerformance('send_telegram_notification', async () => {
-							await sendTelegramNotification(
-								{
-									botToken: config.telegramBotToken,
-									chatId: config.telegramChatId,
-								},
-								message,
-							);
+							const telegramConfig = {
+								botToken: config.telegramBotToken,
+								chatId: config.telegramChatId,
+								threadId: env.TELEGRAM_THREAD_ID || undefined,
+							};
+							await sendTelegramNotification(telegramConfig, message);
 						});
 
 						// Update state with notification time

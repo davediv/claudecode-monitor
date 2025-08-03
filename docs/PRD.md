@@ -43,11 +43,12 @@ A serverless application deployed on Cloudflare Workers that:
 - **FR-010**: Include version number, release date, and summary of changes
 - **FR-011**: Format messages for readability with markdown support
 - **FR-012**: Handle API errors and retry failed notifications
+- **FR-013**: Support sending to specific topics/threads in Telegram supergroups (optional)
 
 #### 3.1.4 State Management
-- **FR-013**: Store the last known version using Cloudflare KV storage
-- **FR-014**: Prevent duplicate notifications for the same version
-- **FR-015**: Initialize state on first run
+- **FR-014**: Store the last known version using Cloudflare KV storage
+- **FR-015**: Prevent duplicate notifications for the same version
+- **FR-016**: Initialize state on first run
 
 ## 4. Technical Requirements
 
@@ -85,6 +86,7 @@ Main Components:
 - **ENV-002**: `TELEGRAM_CHAT_ID` - Target group/channel ID
 - **ENV-003**: `KV_NAMESPACE` - Cloudflare KV namespace binding
 - **ENV-004**: `GITHUB_CHANGELOG_URL` - Changelog URL (optional, with default)
+- **ENV-005**: `TELEGRAM_THREAD_ID` - Thread/topic ID for supergroups (optional)
 
 ## 5. Non-Functional Requirements
 

@@ -46,6 +46,8 @@ export interface TelegramConfig {
 	botToken: string;
 	/** Target chat/channel ID */
 	chatId: string;
+	/** Optional thread/topic ID for sending to specific topics in supergroups */
+	threadId?: string;
 }
 
 /**

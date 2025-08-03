@@ -24,6 +24,13 @@ This document describes how to configure environment variables and secrets for t
 
 ### Optional Variables
 
+#### `TELEGRAM_THREAD_ID`
+- **Description**: Thread/topic ID for sending to specific topics in Telegram supergroups
+- **Type**: String
+- **Example**: `123` (the message_thread_id of the topic)
+- **Default**: Empty (sends to main chat)
+- **Configuration**: Set in `wrangler.jsonc` under `vars`
+
 #### `GITHUB_CHANGELOG_URL`
 - **Description**: URL to the Claude Code changelog
 - **Type**: String
@@ -71,6 +78,28 @@ This document describes how to configure environment variables and secrets for t
 1. Add your bot as an administrator to the channel
 2. For public channels: Use `@channelname`
 3. For private channels: Forward a message from the channel to @userinfobot
+
+## Finding Your Telegram Thread ID (Optional)
+
+For sending notifications to specific topics in Telegram supergroups:
+
+### Prerequisites:
+1. Ensure topics are enabled in your supergroup
+2. Your bot must be a member of the supergroup
+
+### Steps to Get Thread ID:
+1. Send a message to the specific topic/thread
+2. Use the Telegram Bot API to get updates:
+   ```
+   https://api.telegram.org/bot<YourBOTToken>/getUpdates
+   ```
+3. Look for `"message_thread_id"` in the response
+4. Add to your configuration:
+   ```
+   TELEGRAM_THREAD_ID=123
+   ```
+
+**Note**: If `TELEGRAM_THREAD_ID` is not set or is empty, notifications will be sent to the main chat.
 
 ## Testing Your Configuration
 

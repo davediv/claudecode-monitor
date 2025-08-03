@@ -51,6 +51,7 @@ Based on the PRD (Product Requirements Document):
 These need to be configured in `wrangler.jsonc` or via Cloudflare dashboard:
 - `TELEGRAM_BOT_TOKEN` - Bot authentication token
 - `TELEGRAM_CHAT_ID` - Target group/channel ID
+- `TELEGRAM_THREAD_ID` - (Optional) Thread/topic ID for sending to specific topics in supergroups
 - KV namespace binding for state storage
 
 ## TypeScript Configuration

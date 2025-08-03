@@ -120,6 +120,7 @@ export async function sendTelegramNotification(config: TelegramConfig, message: 
 							text: formattedMessage,
 							parse_mode: 'Markdown',
 							disable_web_page_preview: false,
+							...(config.threadId && { message_thread_id: config.threadId }),
 						}),
 					}),
 				`Telegram API call (attempt ${attempt + 1})`,
@@ -153,7 +154,9 @@ export async function sendTelegramNotification(config: TelegramConfig, message: 
 				throw new WorkerError('Telegram API returned ok=false', ErrorCode.API_ERROR, { result });
 			}
 
-			console.log(`Telegram notification sent successfully to chat ${config.chatId}`);
+			console.log(
+				`Telegram notification sent successfully to chat ${config.chatId}${config.threadId ? ` (thread ${config.threadId})` : ''}`,
+			);
 			return;
 		} catch (error) {
 			lastError = error;

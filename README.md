@@ -46,6 +46,7 @@ Configure the following in your `wrangler.jsonc` or Cloudflare dashboard:
 
 - `TELEGRAM_BOT_TOKEN`: Your Telegram bot token from BotFather
 - `TELEGRAM_CHAT_ID`: The Telegram group/channel ID to send notifications to
+- `TELEGRAM_THREAD_ID`: (Optional) Thread/topic ID for sending to specific topics in Telegram supergroups
 - `GITHUB_CHANGELOG_URL`: (Optional) Custom changelog URL, defaults to Claude Code's official changelog
 
 ### KV Namespace
@@ -218,6 +219,7 @@ import { sendTelegramNotification } from './telegram';
 const config = {
   botToken: process.env.TELEGRAM_BOT_TOKEN,
   chatId: process.env.TELEGRAM_CHAT_ID,
+  threadId: process.env.TELEGRAM_THREAD_ID, // Optional: for topic/thread support
 };
 
 const message = {
@@ -240,3 +242,23 @@ try {
   }
 }
 ```
+
+### Telegram Thread/Topic Support
+
+The worker supports sending notifications to specific topics in Telegram supergroups:
+
+1. **Enable Topics in Your Supergroup**: Topics must be enabled in your Telegram supergroup settings
+2. **Get the Thread ID**: The thread ID is the message ID of the first message in the topic
+3. **Configure the Environment Variable**: Set `TELEGRAM_THREAD_ID` in your configuration
+
+Example configuration for topics:
+```json
+{
+  "vars": {
+    "TELEGRAM_CHAT_ID": "-1001234567890",  // Your supergroup ID
+    "TELEGRAM_THREAD_ID": "123"             // Topic message ID
+  }
+}
+```
+
+If `TELEGRAM_THREAD_ID` is not set or is empty, notifications will be sent to the main chat.
