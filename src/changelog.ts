@@ -4,27 +4,96 @@
  */
 
 import type { Version, ChangelogData } from './types/models';
+import { ErrorCode } from './types/models';
+import { WorkerError } from './types';
+import { measureTime, logError } from './utils';
 
 /**
- * Fetches the changelog from GitHub
- * @param url - The URL to fetch the changelog from
- * @returns The raw markdown content
+ * Maximum allowed size for changelog file (1MB)
  */
-export async function fetchChangelog(url: string): Promise<string> {
-	const response = await fetch(url);
+const MAX_CHANGELOG_SIZE = 1024 * 1024; // 1MB
 
-	if (!response.ok) {
-		throw new Error(`Failed to fetch changelog: ${response.status} ${response.statusText}`);
+/**
+ * Default timeout for fetch operations (10 seconds)
+ */
+const FETCH_TIMEOUT = 10000; // 10 seconds
+
+/**
+ * Fetches the changelog from GitHub with proper error handling
+ * @param url - The URL to fetch the changelog from
+ * @param signal - Optional AbortSignal for cancellation
+ * @returns The raw markdown content
+ * @throws {WorkerError} If fetch fails or content exceeds size limit
+ */
+export async function fetchChangelog(url: string, signal?: AbortSignal): Promise<string> {
+	try {
+		console.log(`Fetching changelog from: ${url}`);
+
+		// Create timeout signal if not provided
+		const controller = new AbortController();
+		const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
+		const fetchSignal = signal || controller.signal;
+
+		const response = await measureTime(
+			async () =>
+				fetch(url, {
+					signal: fetchSignal,
+					headers: {
+						'User-Agent': 'claude-code-monitor/1.0',
+						Accept: 'text/plain, text/markdown',
+					},
+				}),
+			'Changelog fetch',
+		);
+
+		clearTimeout(timeoutId);
+
+		if (!response.ok) {
+			throw new WorkerError(`Failed to fetch changelog: ${response.status} ${response.statusText}`, ErrorCode.FETCH_ERROR, {
+				status: response.status,
+				statusText: response.statusText,
+				url,
+			});
+		}
+
+		const content = await response.text();
+		console.log(`Fetched changelog, size: ${content.length} bytes`);
+
+		// Check file size limit
+		if (content.length > MAX_CHANGELOG_SIZE) {
+			throw new WorkerError(`Changelog file exceeds ${MAX_CHANGELOG_SIZE / 1024 / 1024}MB limit`, ErrorCode.FETCH_ERROR, {
+				size: content.length,
+				limit: MAX_CHANGELOG_SIZE,
+			});
+		}
+
+		// Validate content is not empty
+		if (!content || content.trim().length === 0) {
+			throw new WorkerError('Changelog file is empty', ErrorCode.FETCH_ERROR, { url });
+		}
+
+		return content;
+	} catch (error) {
+		// Handle abort/timeout
+		if (error instanceof Error && error.name === 'AbortError') {
+			throw new WorkerError('Changelog fetch timed out', ErrorCode.FETCH_ERROR, { timeout: FETCH_TIMEOUT, url });
+		}
+
+		// Re-throw WorkerError as-is
+		if (error instanceof WorkerError) {
+			throw error;
+		}
+
+		// Log unexpected errors
+		logError(error, { url, operation: 'fetchChangelog' });
+
+		// Wrap other errors
+		throw new WorkerError(
+			`Unexpected error fetching changelog: ${error instanceof Error ? error.message : String(error)}`,
+			ErrorCode.FETCH_ERROR,
+			{ originalError: error, url },
+		);
 	}
-
-	const content = await response.text();
-
-	// Check file size limit (1MB)
-	if (content.length > 1024 * 1024) {
-		throw new Error('Changelog file exceeds 1MB limit');
-	}
-
-	return content;
 }
 
 /**

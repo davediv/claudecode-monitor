@@ -92,3 +92,23 @@ The application follows a modular structure:
 - `src/telegram.ts` - Telegram Bot API integration
 - `src/storage.ts` - KV storage operations for state management
 - `src/utils.ts` - Common utility functions
+- `src/types/` - TypeScript type definitions and data models
+
+## Usage Example
+
+### Fetching Changelog
+
+```typescript
+import { fetchChangelog } from './changelog';
+
+try {
+  const markdown = await fetchChangelog(
+    'https://raw.githubusercontent.com/anthropics/claude-code/refs/heads/main/CHANGELOG.md'
+  );
+  console.log('Changelog fetched successfully');
+} catch (error) {
+  if (error instanceof WorkerError) {
+    console.error(`Failed to fetch: ${error.message}`);
+  }
+}
+```

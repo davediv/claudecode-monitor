@@ -82,14 +82,15 @@ This TODO list outlines the development tasks for the Claude Code Version Monito
   - **Completed**: 2025-08-03
 
 ### Changelog Processing
-- [ ] 🟡 **FEAT-P2-001**: Implement changelog fetcher module
-  - **Acceptance Criteria**: 
+- [x] 🟡 **FEAT-P2-001**: Implement changelog fetcher module
+  - **Acceptance Criteria**: [Met ✓]
     - Fetches changelog from GitHub raw URL
     - Handles network errors gracefully
     - Returns raw markdown content
     - Respects 1MB file size limit
   - **Dependencies**: DB-P2-001
   - **Effort**: M
+  - **Completed**: 2025-08-03
 
 - [ ] 🟡 **FEAT-P2-002**: Implement markdown parser for version extraction
   - **Acceptance Criteria**: 
