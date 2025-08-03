@@ -1,17 +1,15 @@
 {
-  "name": "claude-code-monitor",
-  "version": "1.0.0",
-  "description": "Cloudflare Worker to monitor Claude Code release notes",
-  "main": "src/index.js",
-  "scripts": {
-    "deploy": "wrangler deploy",
-    "dev": "wrangler dev",
-    "tail": "wrangler tail"
-  },
-  "keywords": ["cloudflare-workers", "claude", "monitoring", "telegram"],
-  "author": "",
-  "license": "MIT",
-  "devDependencies": {
-    "wrangler": "^3.0.0"
-  }
+	"name": "claudecode-monitor",
+	"version": "0.0.0",
+	"private": true,
+	"scripts": {
+		"deploy": "wrangler deploy",
+		"dev": "wrangler dev --test-scheduled",
+		"start": "wrangler dev --test-scheduled",
+		"cf-typegen": "wrangler types"
+	},
+	"devDependencies": {
+		"typescript": "^5.5.2",
+		"wrangler": "^4.27.0"
+	}
 }

@@ -1,66 +1,98 @@
-# Claude Code Release Monitor
+# Claude Code Version Monitor
 
-A Cloudflare Worker that monitors Claude Code release notes and sends Telegram notifications when new updates are published.
+A Cloudflare Worker application that monitors the Claude Code changelog for new version releases and automatically sends notifications to a Telegram group.
 
-## Setup Instructions
+## Overview
 
-### 1. Prerequisites
-- Cloudflare account
-- Telegram Bot Token and Chat ID
-- Node.js installed locally
+This serverless application:
+- Polls the Claude Code changelog from GitHub every hour
+- Detects new version releases
+- Sends formatted notifications to a Telegram group
+- Maintains state to avoid duplicate notifications
 
-### 2. Get Telegram Credentials
-1. Create a Telegram bot:
-   - Message @BotFather on Telegram
-   - Send `/newbot` and follow the prompts
-   - Save the bot token
+## Setup
 
-2. Get your Chat ID:
-   - Start a chat with your bot
-   - Send a message to the bot
-   - Visit `https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates`
-   - Find your chat ID in the response
+### Prerequisites
 
-### 3. Installation
+- Cloudflare account with Workers access
+- Telegram Bot (created via BotFather)
+- Node.js and npm installed locally
+
+### Installation
+
+1. Clone the repository:
 ```bash
-# Install Wrangler CLI
-npm install -g wrangler
-
-# Login to Cloudflare
-wrangler login
-
-# Create KV namespace
-wrangler kv:namespace create "CLAUDE_CODE_KV"
+git clone <repository-url>
+cd claude-code-monitor
 ```
 
-### 4. Configuration
-1. Update `wrangler.toml` with your KV namespace ID from the previous step
-2. Set environment variables:
+2. Install dependencies:
 ```bash
-# Add your Telegram credentials
-wrangler secret put TELEGRAM_BOT_TOKEN
-wrangler secret put TELEGRAM_CHAT_ID
+npm install
 ```
 
-### 5. Deploy
+3. Configure environment variables (see Configuration section)
+
+4. Deploy to Cloudflare Workers:
 ```bash
-# Deploy to Cloudflare Workers
-wrangler deploy
+npm run deploy
 ```
 
-### 6. Verify
-- The worker runs every 15 minutes automatically
-- Test manually: `curl https://your-worker.workers.dev/check`
+## Configuration
 
-## How It Works
-1. Fetches the Claude Code release notes page every 15 minutes
-2. Parses the markdown to find the latest release date
-3. Compares with the last checked date stored in KV
-4. Sends a Telegram notification if a new release is found
-5. Updates the last checked date in KV storage
+### Environment Variables
 
-## Features
-- Automatic checks every 15 minutes
-- Telegram notifications with release content
-- Error handling with optional error notifications
-- Manual trigger endpoint at `/check`
+Configure the following in your `wrangler.jsonc` or Cloudflare dashboard:
+
+- `TELEGRAM_BOT_TOKEN`: Your Telegram bot token from BotFather
+- `TELEGRAM_CHAT_ID`: The Telegram group/channel ID to send notifications to
+- `GITHUB_CHANGELOG_URL`: (Optional) Custom changelog URL, defaults to Claude Code's official changelog
+
+### KV Namespace
+
+Create a KV namespace in Cloudflare dashboard and add the binding to `wrangler.jsonc`:
+
+```json
+{
+  "kv_namespaces": [
+    {
+      "binding": "VERSION_STORAGE",
+      "id": "your-kv-namespace-id"
+    }
+  ]
+}
+```
+
+## Development
+
+### Local Development
+
+Run the development server:
+```bash
+npm run dev
+```
+
+Test the scheduled handler:
+```bash
+curl "http://localhost:8787/__scheduled?cron=*+*+*+*+*"
+```
+
+### Scripts
+
+- `npm run dev` - Start development server with scheduled handler testing
+- `npm run deploy` - Deploy to Cloudflare Workers
+- `npm run cf-typegen` - Generate TypeScript types for Cloudflare bindings
+
+## Architecture
+
+The application follows a modular structure:
+
+- `src/index.ts` - Main worker entry point with scheduled handler
+- `src/changelog.ts` - Changelog fetching and parsing logic
+- `src/telegram.ts` - Telegram Bot API integration
+- `src/storage.ts` - KV storage operations for state management
+- `src/utils.ts` - Common utility functions
+
+## License
+
+[License information here]

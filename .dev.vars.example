@@ -1,0 +1,8 @@
+# Development environment variables template
+# Copy this file to .dev.vars and fill in your actual values
+
+# Telegram Bot Token (get from @BotFather on Telegram)
+TELEGRAM_BOT_TOKEN=your_bot_token_here
+
+# Optional: Override TELEGRAM_CHAT_ID for development
+# TELEGRAM_CHAT_ID=your_dev_chat_id
