@@ -142,14 +142,15 @@ This TODO list outlines the development tasks for the Claude Code Version Monito
   - **Effort**: M
   - **Completed**: 2025-08-03
 
-- [ ] 🟡 **INT-P2-002**: Implement notification formatter
-  - **Acceptance Criteria**: 
+- [x] 🟡 **INT-P2-002**: Implement notification formatter
+  - **Acceptance Criteria**: [Met ✓]
     - Formats message as per PRD specification
     - Includes version, date, and changes
     - Adds GitHub changelog link
     - Uses proper markdown formatting
   - **Dependencies**: INT-P2-001, DB-P2-001
   - **Effort**: S
+  - **Completed**: 2025-08-03
 
 - [ ] 🟡 **INT-P2-003**: Implement retry mechanism for Telegram API
   - **Acceptance Criteria**: 

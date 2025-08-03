@@ -7,6 +7,7 @@ import type { TelegramConfig, TelegramMessage } from './types/models';
 import { ErrorCode } from './types/models';
 import { WorkerError } from './types/index';
 import { measureTime, logError } from './utils';
+import { formatTelegramNotification } from './notification-formatter';
 
 /**
  * Telegram API response types
@@ -96,7 +97,7 @@ export async function sendTelegramNotification(config: TelegramConfig, message: 
 		throw new WorkerError('Invalid message data', ErrorCode.VALIDATION_ERROR, { message });
 	}
 
-	const formattedMessage = formatMessage(message);
+	const formattedMessage = formatTelegramNotification(message);
 	const url = `https://api.telegram.org/bot${config.botToken}/sendMessage`;
 
 	let lastError: unknown;
@@ -147,7 +148,7 @@ export async function sendTelegramNotification(config: TelegramConfig, message: 
 				});
 			}
 
-			const result = await response.json();
+			const result = await response.json<TelegramApiResponse>();
 			if (!result.ok) {
 				throw new WorkerError('Telegram API returned ok=false', ErrorCode.API_ERROR, { result });
 			}
@@ -199,6 +200,7 @@ export async function sendTelegramNotification(config: TelegramConfig, message: 
  * Formats the message for Telegram with markdown
  * @param message - Message data
  * @returns Formatted message string
+ * @deprecated Use formatTelegramNotification from notification-formatter module instead
  */
 export function formatMessage(message: TelegramMessage): string {
 	// Validate and sanitize inputs
