@@ -92,7 +92,3 @@ The application follows a modular structure:
 - `src/telegram.ts` - Telegram Bot API integration
 - `src/storage.ts` - KV storage operations for state management
 - `src/utils.ts` - Common utility functions
-
-## License
-
-[License information here]

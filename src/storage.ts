@@ -3,11 +3,7 @@
  * Handles state persistence using Cloudflare KV
  */
 
-export interface StorageState {
-	lastVersion: string;
-	lastCheckTime: string;
-	lastNotificationTime?: string;
-}
+import type { StorageState } from './types/models';
 
 export const STORAGE_KEY = 'claude-code-monitor-state';
 

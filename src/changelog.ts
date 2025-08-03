@@ -3,16 +3,7 @@
  * Handles retrieving and parsing the Claude Code changelog from GitHub
  */
 
-export interface Version {
-	version: string;
-	date: string;
-	changes: string[];
-}
-
-export interface ChangelogData {
-	versions: Version[];
-	latestVersion: Version | null;
-}
+import type { Version, ChangelogData } from './types/models';
 
 /**
  * Fetches the changelog from GitHub

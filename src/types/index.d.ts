@@ -74,3 +74,6 @@ export class WorkerError extends Error {
 		this.name = 'WorkerError';
 	}
 }
+
+// Re-export all data models
+export * from './models';

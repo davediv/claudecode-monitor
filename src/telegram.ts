@@ -3,17 +3,7 @@
  * Handles sending notifications to Telegram groups
  */
 
-export interface TelegramConfig {
-	botToken: string;
-	chatId: string;
-}
-
-export interface TelegramMessage {
-	version: string;
-	date: string;
-	changes: string[];
-	changelogUrl: string;
-}
+import type { TelegramConfig, TelegramMessage } from './types/models';
 
 /**
  * Sends a message to Telegram using the Bot API
