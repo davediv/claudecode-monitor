@@ -6,6 +6,7 @@
 		"deploy": "wrangler deploy",
 		"deploy:production": "wrangler deploy --config wrangler.production.jsonc",
 		"deploy:prod": "./scripts/deploy-production.sh",
+		"deploy:prod-no-tests": "./scripts/deploy-production-no-tests.sh",
 		"dev": "wrangler dev --test-scheduled",
 		"start": "wrangler dev --test-scheduled",
 		"cf-typegen": "wrangler types",
@@ -19,7 +20,8 @@
 		"test:coverage": "jest --coverage",
 		"tail": "wrangler tail",
 		"tail:production": "wrangler tail --config wrangler.production.jsonc",
-		"secret:list": "wrangler secret list --config wrangler.production.jsonc"
+		"secret:list": "wrangler secret list --config wrangler.production.jsonc",
+		"verify:deployment": "./scripts/verify-deployment.sh"
 	},
 	"devDependencies": {
 		"@eslint/js": "^9.32.0",
