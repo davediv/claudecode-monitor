@@ -47,7 +47,8 @@
 	 */
 	"vars": {
 		"GITHUB_CHANGELOG_URL": "https://raw.githubusercontent.com/anthropics/claude-code/refs/heads/main/CHANGELOG.md",
-		"TELEGRAM_CHAT_ID": ""
+		"TELEGRAM_CHAT_ID": "",
+		"LOG_LEVEL": "INFO"
 	},
 
 	/**
