@@ -122,13 +122,14 @@ This TODO list outlines the development tasks for the Claude Code Version Monito
   - **Effort**: M
   - **Completed**: 2025-08-03
 
-- [ ] 🟡 **FEAT-P2-005**: Implement state initialization logic
-  - **Acceptance Criteria**: 
+- [x] 🟡 **FEAT-P2-005**: Implement state initialization logic
+  - **Acceptance Criteria**: [Met ✓]
     - Detects if running for first time
     - Fetches current version from changelog
     - Stores initial state without sending notification
   - **Dependencies**: FEAT-P2-004, FEAT-P2-002
   - **Effort**: S
+  - **Completed**: 2025-08-03
 
 ### Telegram Integration
 - [ ] 🟡 **INT-P2-001**: Implement Telegram Bot API client

@@ -157,6 +157,32 @@ const latest = extractLatestVersion(markdown);
 console.log(`Latest version: ${latest}`);
 ```
 
+### State Management
+
+```typescript
+import { handleStateInitialization, performVersionCheck, updateStateAfterNotification } from './state-manager';
+
+// Initialize state on worker startup
+const config = {
+  changelogUrl: 'https://raw.githubusercontent.com/anthropics/claude-code/refs/heads/main/CHANGELOG.md',
+  kv: env.VERSION_STORAGE,
+};
+
+// Handle state initialization (first run detection)
+const initResult = await handleStateInitialization(config);
+if (initResult.isFirstRun) {
+  console.log('First run - state initialized without notification');
+}
+
+// Perform complete version check
+const checkResult = await performVersionCheck(config);
+if (checkResult.shouldNotify) {
+  console.log(`New version available: ${checkResult.latestVersion}`);
+  // Send notification...
+  await updateStateAfterNotification(env.VERSION_STORAGE, checkResult.latestVersion);
+}
+```
+
 ### Comparing Versions
 
 ```typescript
