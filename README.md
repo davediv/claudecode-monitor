@@ -96,6 +96,35 @@ The application follows a modular structure:
 
 ## Usage Examples
 
+### KV Storage Operations
+
+```typescript
+import { getState, setState, isFirstRun, initializeState, updateNotificationTime } from './storage';
+
+// Check if this is the first run
+if (await isFirstRun(env.VERSION_STORAGE)) {
+  const currentVersion = '1.0.0';
+  await initializeState(env.VERSION_STORAGE, currentVersion);
+}
+
+// Get current state
+const state = await getState(env.VERSION_STORAGE);
+if (state) {
+  console.log(`Last known version: ${state.lastVersion}`);
+}
+
+// Update state with new version
+const updatedState = {
+  ...state,
+  lastVersion: '1.0.1',
+  lastCheckTime: new Date().toISOString(),
+};
+await setState(env.VERSION_STORAGE, updatedState);
+
+// Update notification time after sending
+await updateNotificationTime(env.VERSION_STORAGE, new Date().toISOString());
+```
+
 ### Fetching Changelog
 
 ```typescript
