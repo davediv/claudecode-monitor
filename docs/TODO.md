@@ -291,13 +291,14 @@ This TODO list outlines the development tasks for the Claude Code Version Monito
   - **Effort**: M
   - **Completed**: 2025-08-03
 
-- [ ] 🟢 **DOC-P4-003**: Write deployment guide
-  - **Acceptance Criteria**: 
+- [x] 🟢 **DOC-P4-003**: Write deployment guide
+  - **Acceptance Criteria**: [Met ✓]
     - Step-by-step deployment instructions
     - Environment setup guide
     - Troubleshooting section
   - **Dependencies**: DEPLOY-P4-001
   - **Effort**: S
+  - **Completed**: 2025-08-03
 
 - [ ] 🟢 **DOC-P4-004**: Create operations runbook
   - **Acceptance Criteria**: 
