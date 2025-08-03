@@ -12,8 +12,9 @@ import { performVersionCheck, updateStateAfterNotification } from './state-manag
 import { sendTelegramNotification } from './telegram';
 import { createTelegramMessage } from './notification-formatter';
 import { createConfig, validateConfig } from './config';
-import { logger, configureLogger, LogLevel, trackOperation, createContextLogger, sanitizeForLogging } from './logging';
+import { logger, configureLogger, LogLevel, createContextLogger, sanitizeForLogging } from './logging';
 import { getErrorRecoveryHealth } from './error-recovery';
+import { createPerformanceMiddleware, trackPerformance, getPerformanceHealth } from './performance';
 
 export default {
 	/**
@@ -28,6 +29,7 @@ export default {
 				status: 'OK',
 				timestamp: new Date().toISOString(),
 				errorRecovery: getErrorRecoveryHealth(),
+				performance: getPerformanceHealth(),
 			};
 			return new Response(JSON.stringify(health, null, 2), {
 				status: 200,
@@ -64,6 +66,10 @@ export default {
 			cron: event.cron,
 		});
 
+		// Initialize performance monitoring
+		const perfMonitor = createPerformanceMiddleware(env);
+		perfMonitor.start();
+
 		log.info('Scheduled handler triggered');
 
 		try {
@@ -76,8 +82,8 @@ export default {
 				throw new WorkerError('VERSION_STORAGE KV namespace not configured', ErrorCode.CONFIG_ERROR);
 			}
 
-			// Execute main workflow with enhanced tracking
-			await trackOperation(
+			// Execute main workflow with performance tracking
+			await trackPerformance(
 				'main_workflow',
 				async () => {
 					// Step 1-5: Perform version check (fetches changelog, parses, compares, updates state)
@@ -96,7 +102,7 @@ export default {
 						// Need to fetch the full changelog data to get Version details
 						const { fetchChangelog, parseChangelog } = await import('./changelog');
 
-						const changelogContent = await trackOperation('fetch_changelog_details', () => fetchChangelog(config.githubChangelogUrl));
+						const changelogContent = await trackPerformance('fetch_changelog_details', () => fetchChangelog(config.githubChangelogUrl));
 
 						const changelogData = parseChangelog(changelogContent);
 
@@ -108,7 +114,7 @@ export default {
 						const message = createTelegramMessage(changelogData.latestVersion, config.githubChangelogUrl);
 
 						// Send Telegram notification with tracking
-						await trackOperation('send_telegram_notification', async () => {
+						await trackPerformance('send_telegram_notification', async () => {
 							await sendTelegramNotification(
 								{
 									botToken: config.telegramBotToken,
@@ -119,7 +125,7 @@ export default {
 						});
 
 						// Update state with notification time
-						await trackOperation('update_notification_state', () =>
+						await trackPerformance('update_notification_state', () =>
 							updateStateAfterNotification(env.VERSION_STORAGE, checkResult.latestVersion),
 						);
 
@@ -135,18 +141,36 @@ export default {
 				{ workflow: 'main' },
 			);
 
-			// Log execution time
+			// End performance monitoring and get summary
+			const perfSummary = perfMonitor.end();
+
+			// Log execution time with performance details
 			const duration = Date.now() - startTime;
-			log.info('Scheduled handler completed', { duration });
+			log.info('Scheduled handler completed', {
+				duration,
+				performanceSummary: {
+					meetsTarget: perfSummary.meetsPerformanceTarget,
+					internalProcessing: perfSummary.internalProcessingDuration,
+					apiCalls: perfSummary.apiCallDuration,
+				},
+			});
 		} catch (error) {
+			// End performance monitoring even on error
+			const perfSummary = perfMonitor.end();
 			const duration = Date.now() - startTime;
 
-			// Enhanced error logging with context
+			// Enhanced error logging with context and performance data
 			logger.error('Scheduled handler failed', {
 				executionId,
 				cron: event.cron,
 				duration,
 				error: error instanceof Error ? error.message : String(error),
+				performanceSummary: {
+					meetsTarget: perfSummary.meetsPerformanceTarget,
+					internalProcessing: perfSummary.internalProcessingDuration,
+					apiCalls: perfSummary.apiCallDuration,
+					warnings: perfSummary.warnings,
+				},
 			});
 
 			// Determine if error is critical

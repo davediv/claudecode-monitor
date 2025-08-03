@@ -272,7 +272,7 @@ export function makeResilient<T extends (...args: unknown[]) => Promise<unknown>
 		};
 
 		try {
-			return await withRetry(() => fn(...args), strategy, { operation, args: args.length > 0 ? args : undefined }) as ReturnType<T>;
+			return (await withRetry(() => fn(...args), strategy, { operation, args: args.length > 0 ? args : undefined })) as ReturnType<T>;
 		} catch (error) {
 			// Final error after all retries
 			const recoveryResult = handleErrorWithRecovery(error, {

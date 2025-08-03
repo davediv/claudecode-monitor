@@ -265,7 +265,7 @@ export async function trackOperation<T>(operationName: string, fn: () => Promise
 export function withErrorHandling<T extends (...args: unknown[]) => unknown>(fn: T, errorMessage: string, errorCode: ErrorCode): T {
 	return (async (...args: Parameters<T>): Promise<ReturnType<T>> => {
 		try {
-			return await fn(...args) as ReturnType<T>;
+			return (await fn(...args)) as ReturnType<T>;
 		} catch (error) {
 			logError(error, {
 				function: fn.name || 'anonymous',
