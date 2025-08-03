@@ -206,12 +206,86 @@ export function extractLatestVersion(markdown: string): string | null {
  */
 export function isValidSemver(version: string): boolean {
 	// Regex for semantic versioning with optional pre-release and build metadata
+	// Format: MAJOR.MINOR.PATCH[-PRERELEASE][+BUILD]
 	const semverRegex = /^\d+\.\d+\.\d+(?:-[a-zA-Z0-9.-]+)?(?:\+[a-zA-Z0-9.-]+)?$/;
 	return semverRegex.test(version);
 }
 
 /**
- * Compares two semantic versions
+ * Checks if version v1 is newer than version v2
+ * @param v1 - First version to check
+ * @param v2 - Second version to compare against
+ * @returns true if v1 is newer than v2
+ * @throws {WorkerError} If versions are invalid
+ */
+export function isNewerVersion(v1: string, v2: string): boolean {
+	return compareVersions(v1, v2) > 0;
+}
+
+/**
+ * Parses a semantic version string into its components
+ * @param version - Version string to parse
+ * @returns Parsed version components
+ */
+function parseSemanticVersion(version: string): {
+	major: number;
+	minor: number;
+	patch: number;
+	prerelease?: string;
+	build?: string;
+} {
+	// Remove build metadata for comparison (build metadata doesn't affect version precedence)
+	const [versionWithoutBuild, build] = version.split('+');
+	const [mainPart, prerelease] = versionWithoutBuild.split('-');
+	const [major, minor, patch] = mainPart.split('.').map(Number);
+
+	return { major, minor, patch, prerelease, build };
+}
+
+/**
+ * Compares pre-release versions according to semver spec
+ * @param pre1 - First pre-release string
+ * @param pre2 - Second pre-release string
+ * @returns 1 if pre1 > pre2, -1 if pre1 < pre2, 0 if equal
+ */
+function comparePrereleases(pre1: string, pre2: string): number {
+	// Split by dots to get identifiers
+	const parts1 = pre1.split('.');
+	const parts2 = pre2.split('.');
+
+	// Compare each part
+	for (let i = 0; i < Math.max(parts1.length, parts2.length); i++) {
+		// If one version has fewer parts, it's less
+		if (i >= parts1.length) return -1;
+		if (i >= parts2.length) return 1;
+
+		const part1 = parts1[i];
+		const part2 = parts2[i];
+
+		// Try to parse as numbers
+		const num1 = parseInt(part1, 10);
+		const num2 = parseInt(part2, 10);
+
+		// If both are numeric, compare numerically
+		if (!isNaN(num1) && !isNaN(num2)) {
+			if (num1 !== num2) return num1 > num2 ? 1 : -1;
+		} else if (!isNaN(num1)) {
+			// Numeric identifiers always have lower precedence than non-numeric
+			return -1;
+		} else if (!isNaN(num2)) {
+			return 1;
+		} else {
+			// Both are non-numeric, compare lexically
+			const cmp = part1.localeCompare(part2);
+			if (cmp !== 0) return cmp > 0 ? 1 : -1;
+		}
+	}
+
+	return 0;
+}
+
+/**
+ * Compares two semantic versions according to semver specification
  * @param v1 - First version
  * @param v2 - Second version
  * @returns 1 if v1 > v2, -1 if v1 < v2, 0 if equal
@@ -222,15 +296,8 @@ export function compareVersions(v1: string, v2: string): number {
 		throw new WorkerError(`Invalid semantic version format. v1: "${v1}", v2: "${v2}"`, ErrorCode.PARSE_ERROR);
 	}
 
-	// Split versions into parts
-	const parseVersion = (v: string): { major: number; minor: number; patch: number; prerelease?: string } => {
-		const [mainPart, prerelease] = v.split('-');
-		const [major, minor, patch] = mainPart.split('.').map(Number);
-		return { major, minor, patch, prerelease };
-	};
-
-	const p1 = parseVersion(v1);
-	const p2 = parseVersion(v2);
+	const p1 = parseSemanticVersion(v1);
+	const p2 = parseSemanticVersion(v2);
 
 	// Compare major.minor.patch
 	if (p1.major !== p2.major) return p1.major > p2.major ? 1 : -1;
@@ -241,10 +308,11 @@ export function compareVersions(v1: string, v2: string): number {
 	if (p1.prerelease && !p2.prerelease) return -1;
 	if (!p1.prerelease && p2.prerelease) return 1;
 
-	// If both have prereleases, compare them lexically
+	// If both have prereleases, compare them according to semver spec
 	if (p1.prerelease && p2.prerelease) {
-		return p1.prerelease.localeCompare(p2.prerelease);
+		return comparePrereleases(p1.prerelease, p2.prerelease);
 	}
 
+	// Build metadata does not affect version precedence
 	return 0;
 }

@@ -131,7 +131,7 @@ console.log(`Latest version: ${latest}`);
 ### Comparing Versions
 
 ```typescript
-import { compareVersions, isValidSemver } from './changelog';
+import { compareVersions, isValidSemver, isNewerVersion } from './changelog';
 
 // Validate semantic version format
 if (isValidSemver('1.0.65')) {
@@ -143,4 +143,14 @@ const result = compareVersions('1.0.65', '1.0.64');
 if (result > 0) {
   console.log('1.0.65 is newer than 1.0.64');
 }
+
+// Check if version is newer (convenience function)
+if (isNewerVersion('1.0.0', '1.0.0-alpha')) {
+  console.log('1.0.0 is newer than 1.0.0-alpha');
+}
+
+// Handles complex semver cases
+compareVersions('1.0.0-alpha.1', '1.0.0-alpha');     // returns 1
+compareVersions('1.0.0-rc.1', '1.0.0-beta.11');     // returns 1
+compareVersions('1.0.0+build.1', '1.0.0+build.2');  // returns 0 (build metadata ignored)
 ```
