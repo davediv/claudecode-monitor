@@ -1,0 +1,64 @@
+/**
+ * Production configuration for Cloudflare Workers
+ * This extends the base wrangler.jsonc with production-specific settings
+ * 
+ * To deploy to production:
+ * npx wrangler deploy --config wrangler.production.jsonc
+ */
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "claudecode-monitor",
+	"main": "src/index.ts",
+	"compatibility_date": "2025-08-03",
+	"observability": {
+		"enabled": true
+	},
+	"triggers": {
+		"crons": [
+			// Run every hour at the top of the hour
+			"0 * * * *"
+		]
+	},
+	/**
+	 * Smart Placement for optimal performance
+	 * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
+	 */
+	"placement": { "mode": "smart" },
+
+	/**
+	 * KV Namespace Bindings
+	 * Production namespace ID: 28f1b182444941558bec7c29fb739f84
+	 * This namespace stores the version state and should be created before deployment
+	 */
+	"kv_namespaces": [
+		{
+			"binding": "VERSION_STORAGE",
+			"id": "28f1b182444941558bec7c29fb739f84"
+		}
+	],
+
+	/**
+	 * Environment Variables for Production
+	 */
+	"vars": {
+		"GITHUB_CHANGELOG_URL": "https://raw.githubusercontent.com/anthropics/claude-code/refs/heads/main/CHANGELOG.md",
+		"TELEGRAM_CHAT_ID": "-1001505847848",
+		"TELEGRAM_THREAD_ID": "48",
+		"LOG_LEVEL": "INFO",
+		"PERFORMANCE_ANALYTICS_ENABLED": "true"
+	}
+
+	/**
+	 * Production Secrets Configuration
+	 * 
+	 * IMPORTANT: Before deploying to production, you must set the following secret:
+	 * 
+	 * 1. TELEGRAM_BOT_TOKEN:
+	 *    npx wrangler secret put TELEGRAM_BOT_TOKEN --config wrangler.production.jsonc
+	 *    
+	 *    Then paste your bot token when prompted.
+	 * 
+	 * To verify secrets are set:
+	 *    npx wrangler secret list --config wrangler.production.jsonc
+	 */
+}
