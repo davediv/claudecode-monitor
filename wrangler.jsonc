@@ -47,7 +47,7 @@
 	 */
 	"vars": {
 		"GITHUB_CHANGELOG_URL": "https://raw.githubusercontent.com/anthropics/claude-code/refs/heads/main/CHANGELOG.md",
-		"TELEGRAM_CHAT_ID": "",
+		"TELEGRAM_CHAT_ID": "-1001505847848",
 		/**
 		 * TELEGRAM_THREAD_ID (Optional)
 		 * For sending notifications to specific topics in Telegram supergroups
@@ -56,7 +56,7 @@
 		 * - To find the thread ID: Send a message to the topic and use getUpdates API
 		 *   or check the message_thread_id field in webhook updates
 		 */
-		"TELEGRAM_THREAD_ID": "",
+		"TELEGRAM_THREAD_ID": "48",
 		"LOG_LEVEL": "INFO",
 		"PERFORMANCE_ANALYTICS_ENABLED": "false"
 	},
