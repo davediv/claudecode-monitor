@@ -20,7 +20,7 @@ export default {
 	/**
 	 * HTTP endpoint for testing the scheduled handler
 	 */
-	fetch(req: Request, _env: Env, _ctx: ExecutionContext): Response {
+	async fetch(req: Request, _env: Env, _ctx: ExecutionContext): Promise<Response> {
 		const url = new URL(req.url);
 
 		// Handle health check endpoint
@@ -35,6 +35,57 @@ export default {
 				status: 200,
 				headers: { 'Content-Type': 'application/json' },
 			});
+		}
+
+		// Handle test notification endpoint
+		if (url.pathname === '/test-notification') {
+			try {
+				const config = createConfig(_env);
+				validateConfig(config);
+
+				const testMessage = {
+					version: 'test-1.0.0',
+					date: new Date().toISOString(),
+					changes: [
+						'This is a test notification',
+						'Telegram integration is working correctly',
+						'All systems operational'
+					],
+					changelogUrl: config.githubChangelogUrl
+				};
+
+				const telegramConfig = {
+					botToken: config.telegramBotToken,
+					chatId: config.telegramChatId,
+					threadId: _env.TELEGRAM_THREAD_ID || undefined,
+				};
+
+				await sendTelegramNotification(telegramConfig, testMessage);
+
+				return new Response(
+					JSON.stringify({
+						success: true,
+						message: 'Test notification sent successfully!',
+						timestamp: new Date().toISOString(),
+					}),
+					{
+						status: 200,
+						headers: { 'Content-Type': 'application/json' },
+					},
+				);
+			} catch (error) {
+				return new Response(
+					JSON.stringify({
+						success: false,
+						error: error instanceof Error ? error.message : String(error),
+						timestamp: new Date().toISOString(),
+					}),
+					{
+						status: 500,
+						headers: { 'Content-Type': 'application/json' },
+					},
+				);
+			}
 		}
 
 		// Provide instructions for testing scheduled handler

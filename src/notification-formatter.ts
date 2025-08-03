@@ -44,8 +44,8 @@ const DEFAULT_FORMAT_OPTIONS: Required<FormatOptions> = {
  * @returns Escaped text
  */
 export function escapeMarkdown(text: string): string {
-	// Telegram MarkdownV2 special characters
-	return text.replace(/[_*[\]()~`>#+-=|{}.!]/g, '\\$&');
+	// Telegram legacy Markdown special characters (only _, *, `, [)
+	return text.replace(/[_*`[]/g, '\\$&');
 }
 
 /**
@@ -153,7 +153,7 @@ export function formatTelegramNotification(message: TelegramMessage, options: Fo
 	});
 
 	// Build the message according to PRD specification
-	const titleLine = opts.escapeMarkdown ? `${emoji}*New Claude Code Release\\!*` : `${emoji}*New Claude Code Release!*`;
+	const titleLine = `${emoji}*New Claude Code Release!*`;
 
 	return `${titleLine}
 
